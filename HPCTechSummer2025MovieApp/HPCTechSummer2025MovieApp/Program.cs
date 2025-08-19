@@ -17,6 +17,12 @@ builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, PersistingServerAuthenticationStateProvider>();
 
+builder.Services.AddHttpClient();
+builder.Services.AddHttpClient("OMDBApi", client =>
+{
+    client.BaseAddress = new Uri("https://www.omdbapi.com/");
+});
+
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(options =>
     {
