@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HPCTechSummer2025MovieApp.Controllers;
 
+[ApiController]
 public class UserController : Controller
 {
     private readonly ApplicationDbContext _context;
