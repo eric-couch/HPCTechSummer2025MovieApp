@@ -1,4 +1,4 @@
-﻿namespace HPCTechSummer2025MovieApp.Model;
+﻿namespace HPCTechSummer2025MovieAppShared;
 
 public class MovieSearchResultDto
 {

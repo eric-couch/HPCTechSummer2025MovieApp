@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\HPCTechSummer2025MovieApp.Shared\HPCTechSummer2025MovieAppShared.csproj" />
     <ProjectReference Include="..\HPCTechSummer2025MovieApp.Client\HPCTechSummer2025MovieApp.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.14" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.14" />

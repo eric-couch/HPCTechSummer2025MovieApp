@@ -1,5 +1,6 @@
 ﻿using HPCTechSummer2025MovieApp.Data;
 using HPCTechSummer2025MovieApp.Model;
+using HPCTechSummer2025MovieAppShared;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -37,7 +38,34 @@ public class UserController : Controller
                              Id = u.Id,
                              FirstName = u.FirstName,
                              LastName = u.LastName,
-                             FavoriteMovies = u.FavoriteMovies.Select(um => um.Movie).ToList()
+                             FavoriteMovies = u.FavoriteMovies
+                                .Select(fm => new MovieDto
+                                {
+                                    imdbID = fm.MovieId,
+                                    Title = fm.Movie.Title,
+                                    Year = fm.Movie.Year,
+                                    Rated = fm.Movie.Rated,
+                                    Released = fm.Movie.Released,
+                                    Runtime = fm.Movie.Runtime,
+                                    Genre = fm.Movie.Genre,
+                                    Director = fm.Movie.Director,
+                                    Writer = fm.Movie.Writer,
+                                    Actors = fm.Movie.Actors,
+                                    Plot = fm.Movie.Plot,
+                                    Language = fm.Movie.Language,
+                                    Country = fm.Movie.Country,
+                                    Awards = fm.Movie.Awards,
+                                    Poster = fm.Movie.Poster,
+                                    Metascore = fm.Movie.Metascore,
+                                    imdbRating = fm.Movie.imdbRating,
+                                    imdbVotes = fm.Movie.imdbVotes,
+                                    Type = fm.Movie.Type,
+                                    DVD = fm.Movie.DVD,
+                                    BoxOffice = fm.Movie.BoxOffice,
+                                    Production = fm.Movie.Production,
+                                    Website = fm.Movie.Website,
+                                    Response = fm.Movie.Response
+                                }).ToList()
                          }).FirstOrDefaultAsync();
 
         if (userDto is null)

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using HPCTechSummer2025MovieApp.Model;
+using HPCTechSummer2025MovieAppShared;
 
 namespace HPCTechSummer2025MovieApp.Controllers; 
 
