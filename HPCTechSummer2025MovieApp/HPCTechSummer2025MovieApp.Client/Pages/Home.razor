@@ -1,0 +1,22 @@
+﻿@page "/"
+@rendermode InteractiveWebAssembly
+@using HPCTechSummer2025MovieAppShared
+@using HPCTechSummer2025MovieApp.Client.Components
+
+@if (User?.FavoriteMovies.Any() ?? false)
+{
+    <p>Favorite Movie List</p>
+    <div class="container">
+        <div class="row">
+            @foreach (MovieDto movie in User.FavoriteMovies)
+            {
+                @* <div class="col-lg-2 my-4">@movie.Title (@movie.Year)</div> *@
+                <div class="col-lg-2 my-4">
+                    <MovieDetails Movie="movie" />
+                </div>
+            }
+        </div>
+    </div>
+}
+
+
