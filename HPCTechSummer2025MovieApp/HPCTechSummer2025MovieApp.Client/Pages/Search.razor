@@ -1,0 +1,46 @@
+﻿@page "/search"
+@rendermode InteractiveWebAssembly
+@using HPCTechSummer2025MovieAppShared
+@using HPCTechSummer2025MovieApp.Client.Components
+@using Syncfusion.Blazor.Grids
+
+<label>Search</label>
+
+<div class="container-fluid mb-5">
+    <div class="row">
+        <div class="col-3">
+            <input type="text" class="form-control" @bind="searchTerm" placeholder="Search" />
+        </div>
+        <div class="col-3">
+            <button class="btn btn-primary" @onclick="SearchMovies">Search</button>
+        </div>
+    </div>
+</div>
+
+@if (searchResult?.Any() ?? false)
+{
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-8">
+                <SfGrid DataSource="@searchResult" TValue="MovieSearchResultItem">
+                    <GridEvents TValue="MovieSearchResultItem" 
+                    RowSelected="GetSelectRows"></GridEvents>
+                    <GridColumns>
+                        <GridColumn Field="Title" HeaderText="Title" TextAlign="TextAlign.Center" Width="200"></GridColumn>
+                        <GridColumn Field="Year" HeaderText="Year" TextAlign="TextAlign.Center" Width="100"></GridColumn>
+                    </GridColumns>
+                </SfGrid>
+            </div>
+            <div class="col-4">
+                @if (omdbMovie is not null)
+                {
+                    <MovieDetails Movie="omdbMovie" />
+                }
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <p>No results found.</p>
+}
