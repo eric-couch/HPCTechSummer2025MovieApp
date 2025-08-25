@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using HPCTechSummer2025MovieAppShared;
 using Syncfusion.Blazor.Grids;
+using Syncfusion.Blazor.Navigations;
 
 namespace HPCTechSummer2025MovieApp.Client.Pages;
 
@@ -15,6 +16,8 @@ public partial class Search
     private int totalItems = 0;
     private MovieSearchResultItem selectedMovie;
     private MovieDto? omdbMovie { get; set; } = null;
+    private SfPager Page;
+    private int page { get; set; } = 1;
 
     private async Task SearchMovies()
     {
@@ -22,7 +25,7 @@ public partial class Search
         {
             try
             {
-                var res = await Http.GetFromJsonAsync<MovieSearchResultDto>($"api/SearchMovies?searchTerm={Uri.EscapeDataString(searchTerm)}");
+                var res = await Http.GetFromJsonAsync<MovieSearchResultDto>($"api/SearchMovies?searchTerm={Uri.EscapeDataString(searchTerm)}&page={page}");
                 if (res is not null && res.Response == "True")
                 {
                     searchResult = res.Search;
@@ -59,6 +62,49 @@ public partial class Search
     {
         selectedMovie = args.Data;
         omdbMovie = await Http.GetFromJsonAsync<MovieDto>($"api/GetMovie?imdbId={selectedMovie.imdbID}");
+    }
+
+    public async Task PageClick(PagerItemClickEventArgs args)
+    {
+        page = args.CurrentPage;
+        await SearchMovies();
+    }
+
+    public async Task ToolBarClickHandler(ClickEventArgs args)
+    {
+        if (args.Item.Id == "AddMovie")
+        {
+            await AddMovie();
+        }
+    }
+
+    public async Task AddMovie()
+    {
+        if (selectedMovie is null)
+        {
+            // No movie selected, handle accordingly
+            // add toast component
+            return;
+        }
+        MovieDto newMovie = new MovieDto
+        {
+            imdbID = selectedMovie.imdbID
+        };
+
+        var response = await Http.PostAsJsonAsync("api/add-movie", newMovie);
+        if (response.IsSuccessStatusCode)
+        {
+            // Movie added successfully
+            Console.WriteLine("Movie added to favorites.");
+            // Optionally, you can show a success message to the user
+        }
+        else
+        {
+            // Handle error response
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error adding movie: {errorMessage}");
+            // Optionally, you can show an error message to the user
+        }
     }
 
 }

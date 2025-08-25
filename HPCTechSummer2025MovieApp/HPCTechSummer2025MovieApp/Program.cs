@@ -17,6 +17,7 @@ builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, PersistingServerAuthenticationStateProvider>();
 
+// adding httpclient to the depencency injection container
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient("OMDBApi", client =>
 {

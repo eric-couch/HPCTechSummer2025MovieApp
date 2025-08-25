@@ -3,6 +3,7 @@
 @using HPCTechSummer2025MovieAppShared
 @using HPCTechSummer2025MovieApp.Client.Components
 @using Syncfusion.Blazor.Grids
+@using Syncfusion.Blazor.Navigations
 
 <label>Search</label>
 
@@ -22,9 +23,18 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-8">
-                <SfGrid DataSource="@searchResult" TValue="MovieSearchResultItem">
+                <SfPager @ref="Page" PageSize="10" TotalItemsCount="@totalItems" 
+                    ItemClick="PageClick"></SfPager>
+                <SfGrid DataSource="@searchResult" 
+                        TValue="MovieSearchResultItem"
+                        Toolbar="@(new List<object>() { new ItemModel() 
+                            {   Text="Add Movie", 
+                                PrefixIcon="e-add", 
+                                Id="AddMovie"
+                            }})">
                     <GridEvents TValue="MovieSearchResultItem" 
-                    RowSelected="GetSelectRows"></GridEvents>
+                                RowSelected="GetSelectRows"
+                                OnToolbarClick="ToolBarClickHandler"></GridEvents>
                     <GridColumns>
                         <GridColumn Field="Title" HeaderText="Title" TextAlign="TextAlign.Center" Width="200"></GridColumn>
                         <GridColumn Field="Year" HeaderText="Year" TextAlign="TextAlign.Center" Width="100"></GridColumn>
