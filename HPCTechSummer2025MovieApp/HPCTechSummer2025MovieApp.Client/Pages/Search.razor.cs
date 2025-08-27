@@ -29,20 +29,30 @@ public partial class Search
         {
             try
             {
-                var res = await Http.GetFromJsonAsync<MovieSearchResultDto>($"api/SearchMovies?searchTerm={Uri.EscapeDataString(searchTerm)}&page={page}");
-                if (res is not null && res.Response == "True")
+                var res = await Http.GetFromJsonAsync<DataResponse<MovieSearchResultDto>>($"api/SearchMovies?searchTerm={Uri.EscapeDataString(searchTerm)}&page={page}");
+                if (res.Succeeded)
                 {
-                    searchResult = res.Search;
-                    totalItems = Int32.Parse(res.totalResults);
+                    searchResult = res.Data.Search;
+                    totalItems = Int32.Parse(res.Data.totalResults);
                     // Optionally, you can also handle the case where no results are found
                     if (totalItems == 0)
                     {
-                        Console.WriteLine("No movies found.");
+                        toastContent = res.Message;
+                        toastCss = "e-toast-warning";
+                        StateHasChanged();
+                        await Task.Delay(100); // Ensure the state is updated before showing the toast
+                        await ToastObj.ShowAsync();
+                        return;
                     }
                 }
                 else
                 {
-                    Console.WriteLine("No movies found or an error occurred.");
+                    toastContent = res.Message;
+                    toastCss = "e-toast-warning";
+                    StateHasChanged();
+                    await Task.Delay(100); // Ensure the state is updated before showing the toast
+                    await ToastObj.ShowAsync();
+                    return;
                 }
 
                 if (searchResult != null)
@@ -114,7 +124,7 @@ public partial class Search
         {
             // Handle error response
             var problem = await response.Content.ReadFromJsonAsync<ProblemResponse>();
-            Console.WriteLine($"Error adding movie: {problem.Detail}");
+            Console.WriteLine($"Error adding movie: {problem?.Detail ?? "error"}  ");
             toastContent = $"{problem?.Detail ?? "error"}";
             toastCss = "e-toast-danger";
             StateHasChanged();

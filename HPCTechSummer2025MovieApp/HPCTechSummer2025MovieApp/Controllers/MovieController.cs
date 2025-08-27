@@ -44,18 +44,38 @@ public class MovieController : Controller
 
             if (searchResult is null)
             {
+                // TODO: return problem detail here
                 return NotFound("No movies found for the given search term.");
             }
             else
             {
-                return Ok(searchResult);
+                DataResponse<MovieSearchResultDto> response = new DataResponse<MovieSearchResultDto>();
+                if (Int32.Parse(searchResult.totalResults) == 0)
+                {
+                    response = new DataResponse<MovieSearchResultDto>
+                    {
+                        Data = searchResult,
+                        Message = "No movies found for that search term",
+                        Succeeded = true
+                    };
+                    return Ok(response);
+                }
+                response = new DataResponse<MovieSearchResultDto>
+                {
+                    Data = searchResult,
+                    Message = "Movies retrieved successfully",
+                    Succeeded = true
+                };
+                return Ok(response);
             }
         }
         catch (Exception ex)
         {
             // Log the exception (not implemented here)
             _logger.LogError(ex, "An error occurred while searching for movies.");
+            // return problem detail here instead of generic 500
             return StatusCode(500, $"Internal server error: {ex.Message}");
+            
         }
     }
 
@@ -76,85 +96,6 @@ public class MovieController : Controller
             return Ok(searchResult);
         }
     }
-
-    ////api/add-movie
-    //[HttpPost]
-    //[Route("api/add-movie")]
-    //public async Task<IActionResult> AddMovie([FromBody] MovieDto moviedto)
-    //{
-    //    // get user and see if they already have that movie as their favorite
-    //    // if they don't, get the movie info from ombd and add it to their favorites
-    //    MovieDto newMovie = new MovieDto();
-    //    var userName = User.Identity?.Name;
-    //    var user = await _userManager.FindByNameAsync(userName);
-    //    if (user is null)
-    //    {
-    //        return NotFound();
-    //    }
-
-    //    var movie = _dbContext.Movies.Find(moviedto.imdbID);
-    //    if (movie is null)
-    //    {
-    //        string OMDBAPIKey = _config["Movies:OMDBApiKey"];
-    //        string query = $"{OMDBBaseUrl}?apikey={OMDBAPIKey}&i={moviedto.imdbID}";
-    //        _logger.LogInformation($"Fetching movie details for IMDb ID: {moviedto.imdbID} using URL: {query}");
-    //        newMovie = await _httpClient.GetFromJsonAsync<MovieDto>(query);
-    //        if (newMovie is null)
-    //        {
-    //            return NotFound("Movie not found for the given IMDb ID.");
-    //        }
-    //        await _dbContext.Movies.AddAsync(new Movie
-    //        {
-    //            imdbID = newMovie.imdbID,
-    //            Title = newMovie.Title,
-    //            Year = newMovie.Year,
-    //            Rated = newMovie.Rated,
-    //            Released = newMovie.Released,
-    //            Runtime = newMovie.Runtime,
-    //            Genre = newMovie.Genre,
-    //            Director = newMovie.Director,
-    //            Writer = newMovie.Writer,
-    //            Actors = newMovie.Actors,
-    //            Plot = newMovie.Plot,
-    //            Language = newMovie.Language,
-    //            Country = newMovie.Country,
-    //            Awards = newMovie.Awards,
-    //            Poster = newMovie.Poster,
-    //            Metascore = newMovie.Metascore,
-    //            imdbRating = newMovie.imdbRating,
-    //            imdbVotes = newMovie.imdbVotes,
-    //            Type = newMovie.Type,
-    //            DVD = newMovie.DVD,
-    //            BoxOffice = newMovie.BoxOffice,
-    //            Production = newMovie.Production,
-    //            Website = newMovie.Website,
-    //            Response = newMovie.Response
-    //        });
-    //        newMovie = await _httpClient.GetFromJsonAsync<MovieDto>(query);
-    //    }
-
-    //    var applicationUserMovie = new ApplicationUserMovie
-    //    {
-    //        ApplicationUserId = user.Id,
-    //        MovieId = newMovie.imdbID
-    //    };
-
-    //    if (user.FavoriteMovies.Any(m => m.MovieId == newMovie.imdbID))
-    //    {
-    //        var problem = new ProblemDetails
-    //        {
-    //            Title = "Movie already exists",
-    //            Status = StatusCodes.Status400BadRequest,
-    //            Detail = $"Movie {newMovie.Title} already exists for user.",
-    //            Instance = HttpContext.Request.Path
-    //        };
-
-    //        return BadRequest(problem);
-    //    }
-    //    user.FavoriteMovies.Add(applicationUserMovie);
-    //    await _dbContext.SaveChangesAsync();
-    //    return Ok();
-    //}
 
     [HttpPost("api/add-movie")]
     public async Task<ActionResult> AddMovie([FromBody] MovieDto moviedto)
@@ -187,7 +128,6 @@ public class MovieController : Controller
             return NotFound(problem);
         }
 
-        // Check if the movie is already in the user's favorite movies using the database directly
         // Check if the movie is already in the user's favorite movies using the database directly
         var existingFavorite = await _dbContext.ApplicationUserMovies
             .Include(aum => aum.Movie)
@@ -252,7 +192,13 @@ public class MovieController : Controller
 
         await _dbContext.ApplicationUserMovies.AddAsync(applicationUserMovie);
         await _dbContext.SaveChangesAsync();
-        return Ok();
+        
+        Response res = new Response
+        {
+            Succeeded = true,
+            Message = $"Movie '{movie.Title}' added to favorites."
+        };
+        return Ok(res);
     }
 
 }
