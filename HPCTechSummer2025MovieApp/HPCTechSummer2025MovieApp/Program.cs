@@ -2,6 +2,7 @@ using HPCTechSummer2025MovieApp.Client.Pages;
 using HPCTechSummer2025MovieApp.Components;
 using HPCTechSummer2025MovieApp.Components.Account;
 using HPCTechSummer2025MovieApp.Data;
+using HPCTechSummer2025MovieApp.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +48,9 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+// Add custom Services here
+builder.Services.AddScoped<IMovieService, MovieService>();
 
 builder.Services.AddControllers();
 

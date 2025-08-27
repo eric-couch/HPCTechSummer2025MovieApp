@@ -4,31 +4,23 @@ using Microsoft.AspNetCore.Identity;
 using HPCTechSummer2025MovieApp.Data;
 using HPCTechSummer2025MovieApp.Model;
 using Microsoft.EntityFrameworkCore;
+using HPCTechSummer2025MovieApp.Services;
 
 namespace HPCTechSummer2025MovieApp.Controllers; 
 
 public class MovieController : Controller
 {
-    private readonly HttpClient _httpClient;
     private readonly ILogger<MovieController> _logger;
-    private readonly IConfiguration _config;
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ApplicationDbContext _dbContext;
-
-    private readonly string OMDBBaseUrl = "https://www.omdbapi.com/";
+    private readonly IMovieService _movieService;
     
-
-    public MovieController( HttpClient httpClient, 
-                            ILogger<MovieController> logger,
-                            IConfiguration config,
-                            UserManager<ApplicationUser> userManager,
-                            ApplicationDbContext dbContext)
+    public MovieController( ILogger<MovieController> logger,
+                            IMovieService movieService,
+                            UserManager<ApplicationUser> userManager)
     {
-        _httpClient = httpClient;
         _logger = logger;
-        _config = config;
+        _movieService = movieService;
         _userManager = userManager;
-        _dbContext = dbContext;
     }
 
     [HttpGet]
@@ -37,10 +29,7 @@ public class MovieController : Controller
     {
         try
         {
-            string OMDBAPIKey = _config["Movies:OMDBApiKey"];
-            string query = $"{OMDBBaseUrl}?apikey={OMDBAPIKey}&s={searchTerm}&page={page}";
-            _logger.LogInformation($"Searching for movies with term: {searchTerm} using URL: {query}");
-            var searchResult = await _httpClient.GetFromJsonAsync<MovieSearchResultDto>(query);
+            var searchResult = await _movieService.SearchOMDBMovies(searchTerm, page);
 
             if (searchResult is null)
             {
@@ -83,16 +72,15 @@ public class MovieController : Controller
     [Route("api/GetMovie")]
     public async Task<IActionResult> GetOMDBMovie(string imdbId)
     {
-        string OMDBAPIKey = _config["Movies:OMDBApiKey"];
-        string query = $"{OMDBBaseUrl}?apikey={OMDBAPIKey}&i={imdbId}";
-        _logger.LogInformation($"Fetching movie details for IMDb ID: {imdbId} using URL: {query}");
-        var searchResult = await _httpClient.GetFromJsonAsync<MovieDto>(query);
+        MovieDto searchResult = await _movieService.GetOMDBMovie(imdbId);
         if (searchResult is null)
         {
+            // problem detail
             return NotFound("Movie not found for the given IMDb ID.");
         }
         else
         {
+            // replace this with DataResponse
             return Ok(searchResult);
         }
     }
@@ -129,31 +117,29 @@ public class MovieController : Controller
         }
 
         // Check if the movie is already in the user's favorite movies using the database directly
-        var existingFavorite = await _dbContext.ApplicationUserMovies
-            .Include(aum => aum.Movie)
-            .FirstOrDefaultAsync(aum => aum.ApplicationUserId == user.Id && aum.MovieId == moviedto.imdbID);
 
-        if (existingFavorite != null)
-        {
-            var problem = new ProblemDetails
-            {
-                Title = "Movie Already in Favorites",
-                Status = StatusCodes.Status400BadRequest,
-                Detail = $"Movie '{existingFavorite.Movie.Title}' is already in the user's favorite movies.",
-                Instance = HttpContext.Request.Path
-            };
 
-            return BadRequest(problem);
-        }
+        //if (existingFavorite != null)
+        //{
+        //    var problem = new ProblemDetails
+        //    {
+        //        Title = "Movie Already in Favorites",
+        //        Status = StatusCodes.Status400BadRequest,
+        //        Detail = $"Movie '{existingFavorite.Movie.Title}' is already in the user's favorite movies.",
+        //        Instance = HttpContext.Request.Path
+        //    };
 
-        var movie = _dbContext.Movies.Find(moviedto.imdbID);
+        //    return BadRequest(problem);
+
+
+        //var movie = _dbContext.Movies.Find(moviedto.imdbID);
+        //var movie = _movieService.GetOMDBMovie(moviedto.imdbID);
+
+        Movie? movie = await _movieService.FindMovie(moviedto.imdbID);
         if (movie is null)
         {
-            string OMDBAPIKey = _config["Movies:OMDBApiKey"];
-            string query = $"{OMDBBaseUrl}?apikey={OMDBAPIKey}&i={moviedto.imdbID}";
-            _logger.LogInformation($"Fetching movie details for IMDb ID: {moviedto.imdbID} using URL: {query}");
-            moviedto = await _httpClient.GetFromJsonAsync<MovieDto>(query);
-            await _dbContext.Movies.AddAsync(new Movie
+            moviedto = await _movieService.GetOMDBMovie(moviedto.imdbID);
+            Movie newMovie = new Movie
             {
                 imdbID = moviedto.imdbID,
                 Title = moviedto.Title,
@@ -179,8 +165,8 @@ public class MovieController : Controller
                 Production = moviedto.Production,
                 Website = moviedto.Website,
                 Response = moviedto.Response
-            });
-            movie = await _dbContext.Movies.FindAsync(moviedto.imdbID);
+            };
+            movie = await _movieService.AddMovie(newMovie);
         }
 
         // Add the movie to the user's favorite movies
@@ -190,8 +176,7 @@ public class MovieController : Controller
             MovieId = movie.imdbID
         };
 
-        await _dbContext.ApplicationUserMovies.AddAsync(applicationUserMovie);
-        await _dbContext.SaveChangesAsync();
+        await _movieService.AddMovieToUser(applicationUserMovie);
         
         Response res = new Response
         {
