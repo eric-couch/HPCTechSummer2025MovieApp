@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
     <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+    <UserSecretsId>b5dcb862-ba08-40fd-a28f-bdf26f898a68</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

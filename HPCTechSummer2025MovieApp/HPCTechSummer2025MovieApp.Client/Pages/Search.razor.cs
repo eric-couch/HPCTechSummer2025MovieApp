@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using HPCTechSummer2025MovieAppShared;
 using Syncfusion.Blazor.Grids;
 using Syncfusion.Blazor.Navigations;
+using Syncfusion.Blazor.Notifications;
 
 namespace HPCTechSummer2025MovieApp.Client.Pages;
 
@@ -17,6 +18,9 @@ public partial class Search
     private MovieSearchResultItem selectedMovie;
     private MovieDto? omdbMovie { get; set; } = null;
     private SfPager Page;
+    private SfToast ToastObj;
+    private string toastContent = string.Empty;
+    private string toastCss = "e-toast-success";
     private int page { get; set; } = 1;
 
     private async Task SearchMovies()
@@ -82,8 +86,11 @@ public partial class Search
     {
         if (selectedMovie is null)
         {
-            // No movie selected, handle accordingly
-            // add toast component
+            toastContent = "No movie selected";
+            toastCss = "e-toast-warning";
+            StateHasChanged();
+            await Task.Delay(100); // Ensure the state is updated before showing the toast
+            await ToastObj.ShowAsync();
             return;
         }
         MovieDto newMovie = new MovieDto
@@ -96,14 +103,24 @@ public partial class Search
         {
             // Movie added successfully
             Console.WriteLine("Movie added to favorites.");
-            // Optionally, you can show a success message to the user
+            toastContent = $"Added {selectedMovie.Title} to user favorites";
+            toastCss = "e-toast-success";
+            StateHasChanged();
+            await Task.Delay(100); // Ensure the state is updated before showing the toast
+            await ToastObj.ShowAsync();
+            return;
         }
         else
         {
             // Handle error response
-            var errorMessage = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Error adding movie: {errorMessage}");
-            // Optionally, you can show an error message to the user
+            var problem = await response.Content.ReadFromJsonAsync<ProblemResponse>();
+            Console.WriteLine($"Error adding movie: {problem.Detail}");
+            toastContent = $"{problem?.Detail ?? "error"}";
+            toastCss = "e-toast-danger";
+            StateHasChanged();
+            await Task.Delay(100); // Ensure the state is updated before showing the toast
+            await ToastObj.ShowAsync();
+            return;
         }
     }
 

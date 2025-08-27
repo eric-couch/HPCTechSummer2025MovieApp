@@ -5,6 +5,10 @@ using HPCTechSummer2025MovieApp.Data;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Syncfusion.Blazor;
+
+Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("NDAwODEyMkAzMzMwMmUzMDJlMzAzYjMzMzAzYmFYaUMyMHkweFN3MzNGTHJuMWVlMmJDUGhUaG02M1Bkbk13MjBUa0hib3M9");
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +57,8 @@ builder.Services.AddSwaggerGen(c =>
                                 Version = "v1",
                                 Description="API Server for the Blazor WASM Movie Site"});
 });
+
+builder.Services.AddSyncfusionBlazor();
 
 var app = builder.Build();
 

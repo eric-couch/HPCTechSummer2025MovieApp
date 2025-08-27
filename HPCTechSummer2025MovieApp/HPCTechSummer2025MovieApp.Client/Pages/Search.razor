@@ -4,6 +4,7 @@
 @using HPCTechSummer2025MovieApp.Client.Components
 @using Syncfusion.Blazor.Grids
 @using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Notifications
 
 <label>Search</label>
 
@@ -54,3 +55,12 @@ else
 {
     <p>No results found.</p>
 }
+
+<SfToast    @ref="@ToastObj"
+            ShowProgressBar="true"
+            Timeout="5000"
+            ShowCloseButton="true"
+            Content="@toastContent"
+            CssClass="@toastCss">
+    <ToastPosition X="Center" Y="Top"></ToastPosition>
+</SfToast>

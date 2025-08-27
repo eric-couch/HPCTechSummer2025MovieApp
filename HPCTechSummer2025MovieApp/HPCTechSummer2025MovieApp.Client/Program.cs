@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Syncfusion.Blazor;
 
-Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Mzc5MTMyMUAzMjM5MmUzMDJlMzAzYjMyMzkzYm8yQkFvUEVUbEphSGVJdDBGbkVsblVsMURuUGdUbkxrb1hBTUhnai9XUEk9");
+Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("NDAwODEyMkAzMzMwMmUzMDJlMzAzYjMzMzAzYmFYaUMyMHkweFN3MzNGTHJuMWVlMmJDUGhUaG02M1Bkbk13MjBUa0hib3M9");
 
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
