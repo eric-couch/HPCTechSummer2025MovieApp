@@ -12,11 +12,15 @@ public class UserController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ILogger<UserController> _logger;
 
-    public UserController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
+    public UserController(  UserManager<ApplicationUser> userManager, 
+                            ApplicationDbContext context,
+                            ILogger<UserController> logger)
     {
         _context = context;
         _userManager = userManager;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -28,6 +32,7 @@ public class UserController : Controller
         var user = await _userManager.FindByNameAsync(userName);
         if (user is null)
         {
+            _logger.LogWarning("No user found for {0}", userName);
             return NotFound("User not found");
         }
 
@@ -70,8 +75,12 @@ public class UserController : Controller
 
         if (userDto is null)
         {
+            _logger.LogError("No user data found for user id: {0}. Logged at: {Placeholder:MMMM dd, yyyy}", user.Id);
             return NotFound("User data not found");
         }
+        // log datetime with information
+        _logger.LogInformation("Returning user information for user {0}, number of favorites: {1}.  Logged at: {Placeholder:MMMM dd, yyyy}", user.Id, userDto.FavoriteMovies.Count(), DateTimeOffset.UtcNow);
+        _logger.LogDebug("we're not gonna see this.");
         return Ok(userDto);
     }
 

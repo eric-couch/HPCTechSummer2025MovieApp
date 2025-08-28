@@ -11,16 +11,17 @@ namespace HPCTechSummer2025MovieApp.Controllers;
 public class MovieController : Controller
 {
     private readonly ILogger<MovieController> _logger;
-    private readonly UserManager<ApplicationUser> _userManager;
+    //private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserService _userService;
     private readonly IMovieService _movieService;
     
     public MovieController( ILogger<MovieController> logger,
                             IMovieService movieService,
-                            UserManager<ApplicationUser> userManager)
+                            IUserService userService)
     {
         _logger = logger;
         _movieService = movieService;
-        _userManager = userManager;
+        _userService = userService;
     }
 
     [HttpGet]
@@ -49,6 +50,7 @@ public class MovieController : Controller
                     };
                     return Ok(response);
                 }
+                _logger.LogInformation("Successfully retrieved OMDBMovies for search term: {0}", searchTerm);
                 response = new DataResponse<MovieSearchResultDto>
                 {
                     Data = searchResult,
@@ -102,7 +104,8 @@ public class MovieController : Controller
             return Unauthorized(problem);
         }
         var userName = User.Identity?.Name;
-        var user = await _userManager.FindByNameAsync(User.Identity.Name);
+        //var user = await _userManager.FindByNameAsync(User.Identity.Name);
+        var user = await _userService.GetUserByUserNameAsync(User.Identity.Name);
         if (user is null)
         {
             var problem = new ProblemDetails
@@ -115,25 +118,6 @@ public class MovieController : Controller
 
             return NotFound(problem);
         }
-
-        // Check if the movie is already in the user's favorite movies using the database directly
-
-
-        //if (existingFavorite != null)
-        //{
-        //    var problem = new ProblemDetails
-        //    {
-        //        Title = "Movie Already in Favorites",
-        //        Status = StatusCodes.Status400BadRequest,
-        //        Detail = $"Movie '{existingFavorite.Movie.Title}' is already in the user's favorite movies.",
-        //        Instance = HttpContext.Request.Path
-        //    };
-
-        //    return BadRequest(problem);
-
-
-        //var movie = _dbContext.Movies.Find(moviedto.imdbID);
-        //var movie = _movieService.GetOMDBMovie(moviedto.imdbID);
 
         Movie? movie = await _movieService.FindMovie(moviedto.imdbID);
         if (movie is null)

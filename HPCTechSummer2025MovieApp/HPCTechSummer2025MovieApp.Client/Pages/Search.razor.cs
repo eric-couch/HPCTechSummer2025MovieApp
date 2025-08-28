@@ -94,44 +94,51 @@ public partial class Search
 
     public async Task AddMovie()
     {
-        if (selectedMovie is null)
+        try
         {
-            toastContent = "No movie selected";
-            toastCss = "e-toast-warning";
-            StateHasChanged();
-            await Task.Delay(100); // Ensure the state is updated before showing the toast
-            await ToastObj.ShowAsync();
-            return;
-        }
-        MovieDto newMovie = new MovieDto
-        {
-            imdbID = selectedMovie.imdbID
-        };
+            if (selectedMovie is null)
+            {
+                toastContent = "No movie selected";
+                toastCss = "e-toast-warning";
+                StateHasChanged();
+                await Task.Delay(100); // Ensure the state is updated before showing the toast
+                await ToastObj.ShowAsync();
+                return;
+            }
+            MovieDto newMovie = new MovieDto
+            {
+                imdbID = selectedMovie.imdbID
+            };
 
-        var response = await Http.PostAsJsonAsync("api/add-movie", newMovie);
-        if (response.IsSuccessStatusCode)
+            var response = await Http.PostAsJsonAsync("api/add-movie", newMovie);
+            if (response.IsSuccessStatusCode)
+            {
+                // Movie added successfully
+                Console.WriteLine("Movie added to favorites.");
+                toastContent = $"Added {selectedMovie.Title} to user favorites";
+                toastCss = "e-toast-success";
+                StateHasChanged();
+                await Task.Delay(100); // Ensure the state is updated before showing the toast
+                await ToastObj.ShowAsync();
+                return;
+            }
+            else
+            {
+                // Handle error response
+                var problem = await response.Content.ReadFromJsonAsync<ProblemResponse>();
+                Console.WriteLine($"Error adding movie: {problem?.Detail ?? "error"}  ");
+                toastContent = $"{problem?.Detail ?? "error"}";
+                toastCss = "e-toast-danger";
+                StateHasChanged();
+                await Task.Delay(100); // Ensure the state is updated before showing the toast
+                await ToastObj.ShowAsync();
+                return;
+            }
+        } catch (Exception ex)
         {
-            // Movie added successfully
-            Console.WriteLine("Movie added to favorites.");
-            toastContent = $"Added {selectedMovie.Title} to user favorites";
-            toastCss = "e-toast-success";
-            StateHasChanged();
-            await Task.Delay(100); // Ensure the state is updated before showing the toast
-            await ToastObj.ShowAsync();
-            return;
+            Console.WriteLine("Error in AddMovie");
         }
-        else
-        {
-            // Handle error response
-            var problem = await response.Content.ReadFromJsonAsync<ProblemResponse>();
-            Console.WriteLine($"Error adding movie: {problem?.Detail ?? "error"}  ");
-            toastContent = $"{problem?.Detail ?? "error"}";
-            toastCss = "e-toast-danger";
-            StateHasChanged();
-            await Task.Delay(100); // Ensure the state is updated before showing the toast
-            await ToastObj.ShowAsync();
-            return;
-        }
+       
     }
 
 }
