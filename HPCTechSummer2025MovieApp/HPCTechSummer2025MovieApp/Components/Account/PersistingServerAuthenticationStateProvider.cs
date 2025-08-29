@@ -53,10 +53,15 @@ namespace HPCTechSummer2025MovieApp.Components.Account
 
                 if (userId != null && email != null)
                 {
+                    var roles = principal.FindAll(options.ClaimsIdentity.RoleClaimType)
+                                .Select(c => c.Value)
+                                .ToList();
+
                     state.PersistAsJson(nameof(UserInfo), new UserInfo
                     {
                         UserId = userId,
                         Email = email,
+                        Roles = roles
                     });
                 }
             }

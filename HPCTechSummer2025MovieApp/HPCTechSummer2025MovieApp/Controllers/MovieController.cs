@@ -5,6 +5,7 @@ using HPCTechSummer2025MovieApp.Data;
 using HPCTechSummer2025MovieApp.Model;
 using Microsoft.EntityFrameworkCore;
 using HPCTechSummer2025MovieApp.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HPCTechSummer2025MovieApp.Controllers; 
 

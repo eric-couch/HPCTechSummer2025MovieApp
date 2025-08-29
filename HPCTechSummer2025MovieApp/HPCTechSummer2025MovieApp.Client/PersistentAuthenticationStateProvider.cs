@@ -31,6 +31,14 @@ namespace HPCTechSummer2025MovieApp.Client
                 new Claim(ClaimTypes.Name, userInfo.Email),
                 new Claim(ClaimTypes.Email, userInfo.Email) ];
 
+            if (userInfo.Roles is not null)
+            {
+                foreach (var role in userInfo.Roles)
+                {
+                    claims = claims.Append(new Claim(ClaimTypes.Role, role)).ToArray();
+                }
+            }
+
             authenticationStateTask = Task.FromResult(
                 new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims,
                     authenticationType: nameof(PersistentAuthenticationStateProvider)))));
