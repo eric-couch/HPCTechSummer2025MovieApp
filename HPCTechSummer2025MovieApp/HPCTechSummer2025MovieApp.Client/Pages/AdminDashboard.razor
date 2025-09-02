@@ -1,9 +1,53 @@
 ﻿@page "/admin-dashboard"
+@rendermode InteractiveWebAssembly
 @using Microsoft.AspNetCore.Authorization
-@attribute [Authorize(Roles="Admin")]
+@using Syncfusion.Blazor.Notifications
+@using Syncfusion.Blazor.Grids
+@using Syncfusion.Blazor.Navigations
+@using HPCTechSummer2025MovieAppShared
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Buttons
+@attribute [Authorize(Roles = "Admin")]
 
-<h3>AdminDashboard</h3>
-
-@code {
-
+@if (Users?.Any() ?? false)
+{
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col">
+                <SfGrid DataSource="Users"
+                        TValue="UserEditDto"
+                        @ref="userGrid"
+                        AllowSorting="true">
+                    <GridEvents TValue="UserEditDto"
+                                OnRecordDoubleClick="UserDoubleClickHandler">
+                    </GridEvents>
+                    <GridColumns>
+                        <GridColumn Field="FirstName" HeaderText="First Name" Width="150"></GridColumn>
+                        <GridColumn Field="LastName" HeaderText="Last Name" Width="150"></GridColumn>
+                        <GridColumn Field="UserName" HeaderText="User Name" Width="200"></GridColumn>
+                        <GridColumn Field="Email" HeaderText="Email" Width="200"></GridColumn>
+                        <GridColumn Field="@nameof(UserEditDto.EmailConfirmed)" Width="150">
+                            <Template>
+                                @{
+                                    var userEditDto = (context as UserEditDto);
+                                    <span id="IsActive" title="@(userEditDto.EmailConfirmed ? "Enabled":"Disabled")">
+                                        <SfCheckBox @bind-Checked="userEditDto.EmailConfirmed" TChecked="bool" 
+                                                    @onchange="eventArgs => { ToggleEnabledUser(eventArgs, userEditDto.Id);}"></SfCheckBox>
+                                    </span>
+                                }
+                            </Template>
+                        </GridColumn>
+                    </GridColumns>
+                </SfGrid>
+            </div>
+        </div>
+    </div>
 }
+<SfToast @ref="@ToastObj"
+         ShowProgressBar="true"
+         Timeout="5000"
+         ShowCloseButton="true"
+         Content="@toastContent"
+         CssClass="@toastCss">
+    <ToastPosition X="Center" Y="Top"></ToastPosition>
+</SfToast>

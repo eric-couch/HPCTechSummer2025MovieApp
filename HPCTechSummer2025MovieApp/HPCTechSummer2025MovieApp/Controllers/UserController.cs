@@ -80,8 +80,52 @@ public class UserController : Controller
         }
         // log datetime with information
         _logger.LogInformation("Returning user information for user {0}, number of favorites: {1}.  Logged at: {Placeholder:MMMM dd, yyyy}", user.Id, userDto.FavoriteMovies.Count(), DateTimeOffset.UtcNow);
-        _logger.LogDebug("we're not gonna see this.");
         return Ok(userDto);
     }
 
+    [HttpGet]
+    [Route("api/users")]
+    public async Task<DataResponse<List<UserEditDto>>> Getusers()
+    {
+        // add this to the service class
+        // add exception handling
+        // add logging etc.
+        var users = await (from u in _context.Users
+                           let query = (from ur in _context.Set<IdentityUserRole<string>>()
+                                        where ur.UserId.Equals(u.Id)
+                                        join r in _context.Roles on ur.RoleId equals r.Id
+                                        select r.Name).ToList()
+                           select new UserEditDto
+                           {
+                                 Id = u.Id,
+                                 UserName = u.UserName,
+                                 Email = u.Email,
+                                 EmailConfirmed = u.EmailConfirmed,
+                                 FirstName = u.FirstName,
+                                 LastName = u.LastName,
+                                 Admin = query.Contains("Admin")
+                           }).ToListAsync();
+
+        return new DataResponse<List<UserEditDto>>
+        {
+            Data = users,
+            Succeeded = true,
+            Message = "Users retrieved successfully"
+        };
+    }
+
+    [HttpGet]
+    [Route("api/ToggleEnabledUser")]
+    public async Task<bool> ToggleEnabledUser(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return false;
+
+        }
+        user.EmailConfirmed = !user.EmailConfirmed;
+        await _userManager.UpdateAsync(user);
+        return true;
+    }
 }
