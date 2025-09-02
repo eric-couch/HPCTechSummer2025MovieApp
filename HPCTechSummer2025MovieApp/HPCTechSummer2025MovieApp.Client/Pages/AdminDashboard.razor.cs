@@ -21,22 +21,32 @@ public partial class AdminDashboard
 
     protected override async Task OnInitializedAsync()
     {
-        if (Http.BaseAddress is null)
+        try
         {
-            Http.BaseAddress = new Uri("https://localhost:7265/");
+            // Use relative URL - works in all environments
+            var res = await Http.GetFromJsonAsync<DataResponse<List<UserEditDto>>>("api/users");
+            if (res?.Succeeded == true)
+            {
+                Users = res.Data;
+            }
+            else
+            {
+                toastContent = res?.Message ?? "Failed to load users";
+                toastCss = "e-toast-warning";
+                StateHasChanged();
+                await Task.Delay(100);
+                if (ToastObj != null)
+                    await ToastObj.ShowAsync();
+            }
         }
-        var res = await Http.GetFromJsonAsync<DataResponse<List<UserEditDto>>>("api/users");
-        if (res.Succeeded)
+        catch (Exception ex)
         {
-            Users = res.Data;
-        }
-        else
-        {
-            toastContent = res.Message;
-            toastCss = "e-toast-warning";
+            toastContent = $"Error loading users: {ex.Message}";
+            toastCss = "e-toast-danger";
             StateHasChanged();
-            await Task.Delay(100); // Ensure the state is updated before showing the toast
-            await ToastObj.ShowAsync();
+            await Task.Delay(100);
+            if (ToastObj != null)
+                await ToastObj.ShowAsync();
         }
     }
 
@@ -47,14 +57,27 @@ public partial class AdminDashboard
 
     public async Task ToggleEnabledUser(ChangeEventArgs args, string userId)
     {
-        bool res = await Http.GetFromJsonAsync<bool>($"api/ToggleEnabledUser?userId={Uri.EscapeDataString(userId)}");
-        if (!res)
+        try
         {
-            toastContent = "Toggle of User Enabled Failed!";
-            toastCss = "e-toast-warning";
+            bool res = await Http.GetFromJsonAsync<bool>($"api/ToggleEnabledUser?userId={Uri.EscapeDataString(userId)}");
+            if (!res)
+            {
+                toastContent = "Toggle of User Enabled Failed!";
+                toastCss = "e-toast-warning";
+                StateHasChanged();
+                await Task.Delay(100);
+                if (ToastObj != null)
+                    await ToastObj.ShowAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            toastContent = $"Error toggling user: {ex.Message}";
+            toastCss = "e-toast-danger";
             StateHasChanged();
-            await Task.Delay(100); // Ensure the state is updated before showing the toast
-            await ToastObj.ShowAsync();
+            await Task.Delay(100);
+            if (ToastObj != null)
+                await ToastObj.ShowAsync();
         }
     }
 
