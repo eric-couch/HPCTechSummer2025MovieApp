@@ -1,5 +1,6 @@
 ﻿using HPCTechSummer2025MovieAppShared;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Syncfusion.Blazor.Grids;
 using Syncfusion.Blazor.Notifications;
 using System.Net.Http;
@@ -17,9 +18,18 @@ public partial class AdminDashboard
     private SfToast ToastObj;
     private string toastContent = string.Empty;
     private string toastCss = "e-toast-success";
-    
+    private bool IsUserModalVisible = false;
+    private EditForm editForm;
+    private UserEditDto userEditDto { get; set; } = new();
+
+
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadGrid();
+    }
+
+    private async Task LoadGrid()
     {
         try
         {
@@ -52,9 +62,53 @@ public partial class AdminDashboard
 
     public async Task UserDoubleClickHandler(RecordDoubleClickEventArgs<UserEditDto> args)
     {
-        return;
+        userEditDto = args.RowData;
+        IsUserModalVisible = true;
     }
 
+    public async Task AddUserOnSubmit()
+    {
+        var res = await Http.PostAsJsonAsync("api/update-user", userEditDto);
+        if (res.IsSuccessStatusCode == true)
+        {
+            userEditDto = new UserEditDto();
+            IsUserModalVisible = false;
+            LoadGrid();
+        }
+    }
+
+    public void Reset()
+    {
+        userEditDto = new UserEditDto();
+        IsUserModalVisible = false;
+    }
+
+    //ToggleAdminUser
+    public async Task ToggleAdminUser(ChangeEventArgs args, string userId)
+    {
+        try
+        {
+            bool res = await Http.GetFromJsonAsync<bool>($"api/ToggleAdminUser?userId={Uri.EscapeDataString(userId)}");
+            if (!res)
+            {
+                toastContent = "Toggle of User Admin Failed!";
+                toastCss = "e-toast-warning";
+                StateHasChanged();
+                await Task.Delay(100);
+                if (ToastObj != null)
+                    await ToastObj.ShowAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            toastContent = $"Error toggling user: {ex.Message}";
+            toastCss = "e-toast-danger";
+            StateHasChanged();
+            await Task.Delay(100);
+            if (ToastObj != null)
+                await ToastObj.ShowAsync();
+        }
+    }
     public async Task ToggleEnabledUser(ChangeEventArgs args, string userId)
     {
         try

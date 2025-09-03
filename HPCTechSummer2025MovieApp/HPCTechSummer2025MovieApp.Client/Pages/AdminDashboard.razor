@@ -7,6 +7,7 @@
 @using HPCTechSummer2025MovieAppShared
 @using Syncfusion.Blazor.Inputs
 @using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Popups
 @attribute [Authorize(Roles = "Admin")]
 
 @if (Users?.Any() ?? false)
@@ -37,12 +38,66 @@
                                 }
                             </Template>
                         </GridColumn>
+                        <GridColumn Field="@nameof(UserEditDto.Admin)" Width="150">
+                            <Template>
+                                @{
+                                    var userEditDto = (context as UserEditDto);
+                                    <span id="IsActive" title="@(userEditDto.Admin ? "Enabled" : "Disabled")">
+                                        <SfCheckBox @bind-Checked="userEditDto.Admin" TChecked="bool"
+                                                    @onchange="eventArgs => { ToggleAdminUser(eventArgs, userEditDto.Id); }"></SfCheckBox>
+                                    </span>
+                                }
+                            </Template>
+                        </GridColumn>
                     </GridColumns>
                 </SfGrid>
             </div>
         </div>
     </div>
 }
+
+<SfDialog Width="800px" Height="800px" IsModal="true" @bind-Visible="@IsUserModalVisible">
+    <DialogTemplates>
+        <Header>Add/Edit User</Header>
+        <Content>
+            <EditForm @ref="editForm" Model="@userEditDto" OnValidSubmit="AddUserOnSubmit">
+                <DataAnnotationsValidator />
+                <div class="form-group row">
+                    <div class="col-md-12">
+                        <label for="email">Email:</label>
+                        <SfTextBox ID="email" Placeholder="Email"
+                                   @bind-Value="@userEditDto.Email"></SfTextBox>
+                        <ValidationMessage For="@(() => userEditDto.Email)" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-12">
+                        <label for="firstName">First Name:</label>
+                        <SfTextBox ID="firstName" Placeholder="First Name"
+                                   @bind-Value="@userEditDto.FirstName"></SfTextBox>
+                        <ValidationMessage For="@(() => userEditDto.FirstName)" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-12">
+                        <label for="lastName">Last Name:</label>
+                        <SfTextBox ID="lastName" Placeholder="Last Name"
+                                   @bind-Value="@userEditDto.LastName"></SfTextBox>
+                        <ValidationMessage For="@(() => userEditDto.LastName)" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col=md-12 text-right" style="padding-top: 5px">
+                        <SfButton IsPrimary="true" Type="button" title="Cancel"
+                            @onclick="@(() => {Reset();})">Cancel</SfButton>
+                        <SfButton IsPrimary="true" typeof="Submit">Update User</SfButton>
+                    </div>
+                </div>
+            </EditForm>
+        </Content>
+    </DialogTemplates>
+</SfDialog>
+
 <SfToast @ref="@ToastObj"
          ShowProgressBar="true"
          Timeout="5000"

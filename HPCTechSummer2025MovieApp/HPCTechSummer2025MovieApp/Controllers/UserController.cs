@@ -1,6 +1,7 @@
 ﻿using HPCTechSummer2025MovieApp.Data;
 using HPCTechSummer2025MovieApp.Model;
 using HPCTechSummer2025MovieAppShared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -126,6 +127,43 @@ public class UserController : Controller
         }
         user.EmailConfirmed = !user.EmailConfirmed;
         await _userManager.UpdateAsync(user);
+        return true;
+    }
+
+    //api/ToggleAdminUser
+    [HttpGet]
+    [Route("api/ToggleAdminUser")]
+    public async Task<bool> ToggleAdminUser(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return false;
+
+        }
+        var roles = await _userManager.GetRolesAsync(user);
+        if (roles.Contains("Admin"))
+        {
+            await _userManager.RemoveFromRoleAsync(user, "Admin");
+        } else
+        {
+            await _userManager.AddToRoleAsync(user, "Admin");
+        }
+
+        await _userManager.UpdateAsync(user);
+        return true;
+    }
+
+    [HttpPost]
+    [Route("api/update-user")]
+    [Authorize(Roles ="Admin")]
+    public async Task<bool> UpdateUser([FromBody] UserEditDto user)
+    {
+        var userToUpdate = await _userManager.FindByNameAsync(user.Email);
+        userToUpdate.FirstName = user.FirstName;
+        userToUpdate.LastName = user.LastName;
+        userToUpdate.Email = user.Email;
+        await _userManager.UpdateAsync(userToUpdate);
         return true;
     }
 }
